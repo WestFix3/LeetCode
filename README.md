@@ -1,7 +1,7 @@
 # LeetCode
 
-4 Megoldatlan feladat: \n
-Add Two Numbers \n
-Subrectangle Queries \n
-Word Search \n
-Finding the Users Active Minutes \n
+4 Megoldatlan feladat: <br>
+Add Two Numbers <br>
+Subrectangle Queries <br>
+Word Search <br>
+Finding the Users Active Minutes <br>

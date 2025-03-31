@@ -20,23 +20,27 @@ public class Main {
 
         int j=nums.length-1;
         int index = nums.length-1;
-        while(index>0){
-            if(nums[j] < pivot){
-                break;
-            }
-
-            if(nums[j] == pivot){
-                int k = j;
-                while(nums[k] < pivot){
+        while(nums[index] >= pivot){ //Addig megyünk amig az összes nagyobb element végig nem értünk
+            //System.out.println("nums[index] >= pivot :" + nums[index] + " >= " + pivot);
+            if(nums[index] == pivot){ //Ha az elem pivot elem
+                int k = index;
+                while(nums[k] >= pivot){ //Végigmegyünk a nagyobb elemeken, ha találunk egyet ami nem a pivot akkor kicseréljük
+                    //System.out.println("nums[k] > pivot: " + nums[k] + " >= " + pivot);
                     if(nums[k] != pivot){
+                        //System.out.println("CSERE: " + nums[k] + " : " + pivot);
                         int seg = nums[index];
                         nums[index] = nums[k];
                         nums[k] = seg;
+                        //System.out.print("nums: ");
+//                        for(int s : nums){
+//                            System.out.print(s + ", ");
+//                        }
+//                        System.out.println();
+                        break;
                     }
                     k--;
                 }
             }
-
             index--;
         }
 
@@ -44,9 +48,9 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        int[] nums = new int[]{-3,4,3,2};
+        int[] nums = new int[]{9,12,5,10,14,3,10};
 
-        int pivot = 2;
+        int pivot = 10;
 
         int[] result = pivotArray(nums, pivot);
 

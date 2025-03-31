@@ -18,16 +18,26 @@ public class Main {
             }
         }
 
-        int j=nums.length-2;
+        int j=nums.length-1;
         int index = nums.length-1;
-        while(j>0){
+        while(index>0){
             if(nums[j] < pivot){
                 break;
             }
 
+            if(nums[j] == pivot){
+                int k = j;
+                while(nums[k] < pivot){
+                    if(nums[k] != pivot){
+                        int seg = nums[index];
+                        nums[index] = nums[k];
+                        nums[k] = seg;
+                    }
+                    k--;
+                }
+            }
 
-
-            j--;
+            index--;
         }
 
         return nums;

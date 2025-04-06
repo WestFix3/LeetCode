@@ -1,5 +1,8 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class Main {
     public static void main(String[] args) {
-        BattleGame.launch(BattleGame.class, args);
+        SimpleButtonMessage.launch(SimpleButtonMessage.class, args);
     }
 }

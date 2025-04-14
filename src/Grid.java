@@ -18,6 +18,7 @@ public class Grid extends Application {
         HBox hBox2 = new HBox();
         HBox hBox3 = new HBox();
         HBox hBox4 = new HBox();
+        HBox hBox5 = new HBox();
 
         List<Cards> cardsList = new ArrayList<>();
         List<String> szavak = List.of("alma", "banan", "cica", "kutya", "macska", "korte", "dinnye", "eper", "lo", "hal");
@@ -58,8 +59,11 @@ public class Grid extends Application {
             }
         }
 
+        Cards new_game = new Cards("Uj jatek");
+        hBox5.getChildren().add(new_game.getNewButton());
+
         // Hozzáadjuk az HBox-okat a VBox-hoz
-        vBox.getChildren().addAll(hBox1, hBox2, hBox3, hBox4);
+        vBox.getChildren().addAll(hBox1, hBox2, hBox3, hBox4, hBox5);
 
         // Létrehozunk egy Scene-t és beállítjuk a VBox-ot
         Scene scene = new Scene(vBox, 500, 200);

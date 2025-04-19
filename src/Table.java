@@ -4,7 +4,6 @@ import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -12,14 +11,13 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Tablazat extends Application {
+public class Table extends Application {
     public static final int SIZE = 100;
     public static final int WIDTH = 5;
     public static final int HEIGHT = 8;
     public static List<List<Rect>> rectList;
     public static int level;
     private Move move;
-
 
     @Override
     public void start(Stage primaryStage) {
@@ -50,8 +48,6 @@ public class Tablazat extends Application {
         timeline.play();
     }
 
-
-
     public void handleKeyPress(javafx.scene.input.KeyEvent event) {
         switch (event.getCode()) {
             case A:
@@ -64,7 +60,6 @@ public class Tablazat extends Application {
                 break;
         }
     }
-
 
     public void draw(GraphicsContext gc) {
         for (int i = 0; i < HEIGHT; i++) {

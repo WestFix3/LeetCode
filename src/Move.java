@@ -12,6 +12,7 @@ public class Move {
     private boolean over = false;
     private boolean clean = false;
     private int rowToClean = -1;
+    private Shape shape;
 
     public Move(List<List<Rect>> rectList, int level, GraphicsContext gc) {
         this.rectList = rectList;
@@ -30,7 +31,7 @@ public class Move {
     }
 
     public void moveRight() {
-        if (currentX < Tablazat.WIDTH - 1) {
+        if (currentX < Table.WIDTH - 1) {
             currentX++;
             currentY--;
             force();
@@ -38,21 +39,26 @@ public class Move {
     }
 
     public void force() {
+        if(currentY == 0){
+            shape = new I(rectList);
+        }
+
         if (clean) {
             clearRow(rowToClean);
             clean = false;
             rowToClean = -1;
         }
 
-        for (int i = 0; i < Tablazat.HEIGHT; i++) {
-            for (int j = 0; j < Tablazat.WIDTH; j++) {
+        for (int i = 0; i < Table.HEIGHT; i++) {
+            for (int j = 0; j < Table.WIDTH; j++) {
                 Rect rect = rectList.get(i).get(j);
                 if (i == currentY && j == currentX) {
-                    rect.setColor(Color.RED);
+                    shape.MoveDown(currentY, currentX);
+                    //rect.setColor(Color.RED);
                 } else if (!rect.getHely()) {
                     rect.setColor(Color.WHITE);
+                    rect.setRect();
                 }
-                rect.setRect();
             }
         }
 
@@ -74,7 +80,7 @@ public class Move {
     }
 
     private boolean collideOrEnd(int x, int y) {
-        if (y < Tablazat.HEIGHT - 1) {
+        if (y < Table.HEIGHT - 1) {
             if (rectList.get(y + 1).get(x).getColor() == Color.RED) {
                 if (isItOver(x, y)) {
                     over = true;

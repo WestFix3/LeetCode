@@ -9,6 +9,9 @@ public class Move {
     private int currentX;
     private int currentY;
     private GraphicsContext gc;
+    private boolean over = false;
+    private boolean clean = false;
+    private int rowToClean = -1;
 
     public Move(List<List<Rect>> rectList, int level, GraphicsContext gc) {
         this.rectList = rectList;
@@ -21,6 +24,7 @@ public class Move {
     public void moveLeft() {
         if (currentX > 0) {
             currentX--;
+            currentY--;
             force();
         }
     }
@@ -28,11 +32,18 @@ public class Move {
     public void moveRight() {
         if (currentX < Tablazat.WIDTH - 1) {
             currentX++;
+            currentY--;
             force();
         }
     }
 
     public void force() {
+        if (clean) {
+            clearRow(rowToClean);
+            clean = false;
+            rowToClean = -1;
+        }
+
         for (int i = 0; i < Tablazat.HEIGHT; i++) {
             for (int j = 0; j < Tablazat.WIDTH; j++) {
                 Rect rect = rectList.get(i).get(j);
@@ -45,17 +56,29 @@ public class Move {
             }
         }
 
-        currentY++;
+        if (over) {
+            Over();
+        }
 
-        if (collideOrEnd(currentY, currentX)) {
+        if (collideOrEnd(currentX, currentY)) {
+            if (allOneColor(currentY)) {
+                clean = true;
+                rowToClean = currentY;
+            }
             rectList.get(currentY).get(currentX).setHely(true);
+            currentX = 2;
             currentY = 0;
+        } else {
+            currentY++;
         }
     }
 
     private boolean collideOrEnd(int x, int y) {
-        if (x < Tablazat.HEIGHT - 1) {
-            if (rectList.get(x + 1).get(y).getColor() == Color.RED) {
+        if (y < Tablazat.HEIGHT - 1) {
+            if (rectList.get(y + 1).get(x).getColor() == Color.RED) {
+                if (isItOver(x, y)) {
+                    over = true;
+                }
                 return true;
             }
         } else {
@@ -63,5 +86,35 @@ public class Move {
         }
 
         return false;
+    }
+
+    private boolean allOneColor(int y) {
+        Color firstColor = rectList.get(y).get(0).getColor();
+        for (Rect rect : rectList.get(y)) {
+            if (!rect.getColor().equals(firstColor)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void clearRow(int y) {
+        for (Rect rect : rectList.get(y)) {
+            rect.setColor(Color.WHITE);
+            rect.setRect();
+            rect.setHely(false);
+        }
+    }
+
+    private boolean isItOver(int x, int y) {
+        if (y == 0) {
+            return true;
+        }
+        return false;
+    }
+
+    private void Over() {
+        System.out.println("GAME OVER");
+        System.exit(1);
     }
 }

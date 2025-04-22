@@ -1,13 +1,14 @@
+package tetris;
+
 import javafx.scene.paint.Color;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class I extends Shape {
     private int[] x;
     private int[] y;
-    private List<List<Rect>> rectList;
-    public I(List<List<Rect>> rectList){
+    public List<List<Rects>> rectList;
+    public I(List<List<Rects>> rectList){
         super(rectList);
         this.rectList = rectList;
         x = new int[]{0,-1};
@@ -16,6 +17,10 @@ public class I extends Shape {
 
     @Override
     public void MoveDown(int newX, int newY){
+        x[0] = newX-1;
+        x[1] = newX;
+        y[0] = newY;
+        y[1] = newY;
         for(int i=0; i<x.length; i++){
             if(isPositive(x[i]-1) && isPositive(y[i]-1)) {
                 rectList.get(x[i]).get(y[i]).setColor(Color.WHITE);
@@ -38,7 +43,7 @@ public class I extends Shape {
     @Override
     public void Delete(){
         for(int i=0; i<x.length; i++){
-            Rect rect = rectList.get(x[i]).get(y[i]);
+            Rects rect = rectList.get(x[i]).get(y[i]);
             rect.setColor(Color.WHITE);
             rect.setRect();
         }

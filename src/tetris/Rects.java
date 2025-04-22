@@ -1,7 +1,9 @@
+package tetris;
+
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
-public class Rect {
+public class Rects {
     private GraphicsContext gc;
     private int i;
     private int j;
@@ -9,7 +11,7 @@ public class Rect {
     private Color color;
     private boolean helyen_van;
 
-    public Rect(GraphicsContext gc, int i, int j, int SIZE, Color color){
+    public Rects(GraphicsContext gc, int i, int j, int SIZE, Color color){
         this.gc = gc;
         this.i = i;
         this.j = j;

@@ -1,11 +1,12 @@
-import java.util.ArrayList;
+package tetris;
+
 import java.util.List;
 
 public abstract class Shape {
-    private List<List<Rect>> rectList;
+    public List<List<Rects>> rectList;
     private List<Shape> shapes;// = List.of(new I(rectList), new T(rectList));
 
-    public Shape(List<List<Rect>> rectList){
+    public Shape(List<List<Rects>> rectList){
         this.rectList = rectList;
     }
 
@@ -15,8 +16,8 @@ public abstract class Shape {
 
     public abstract void Delete();
 
-    public boolean isPositive(int x){
-        if(x > 0 && x < 8){
+    protected boolean isPositive(int x){
+        if(x >= 0 && x < 8){
             return true;
         }
 

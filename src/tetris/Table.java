@@ -1,3 +1,5 @@
+package tetris;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
@@ -15,7 +17,7 @@ public class Table extends Application {
     public static final int SIZE = 100;
     public static final int WIDTH = 5;
     public static final int HEIGHT = 8;
-    public static List<List<Rect>> rectList;
+    public static List<List<Rects>> rectList;
     public static int level;
     private Move move;
 
@@ -64,7 +66,7 @@ public class Table extends Application {
     public void draw(GraphicsContext gc) {
         for (int i = 0; i < HEIGHT; i++) {
             for (int j = 0; j < WIDTH; j++) {
-                Rect rect = new Rect(gc, i, j, SIZE, Color.WHITE);
+                Rects rect = new Rects(gc, i, j, SIZE, Color.WHITE);
                 rect.setRect();
                 rectList.get(i).add(rect);
             }
@@ -72,7 +74,7 @@ public class Table extends Application {
     }
 
 
-    public List<Rect> getRectListIndex(int index) {
+    public List<Rects> getRectListIndex(int index) {
         return rectList.get(index);
     }
 }

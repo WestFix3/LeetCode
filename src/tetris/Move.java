@@ -8,44 +8,45 @@ import java.util.List;
 public class Move {
     public List<List<Rects>> rectList;
     private int level;
-    private int currentX;
-    private int currentY;
     private GraphicsContext gc;
     private boolean over = false;
     private boolean clean = false;
-    private int rowToClean = -1;
+    private int curr;
     private Shape shape;
 
     public Move(List<List<Rects>> rectList, int level, GraphicsContext gc) {
         this.rectList = rectList;
         this.level = level;
         this.gc = gc;
-        this.currentX = 2;
-        this.currentY = 0;
+        this.curr = 0;
     }
 
     public void moveLeft() {
-        rectList.get(currentY).get(currentX).setColor(Color.WHITE);
-        if (currentX > 0) {
-            currentX--;
-            currentY--;
-            rectList.get(currentY).get(currentX).setColor(Color.RED);
-            force();
+        for(int i=0; i<shape.getRectCount(); i++){
+            int[] pos = shape.getPos(i);
+            rectList.get(pos[1]).get(pos[0]).setColor(Color.WHITE);
+            if (pos[0] > 0) {
+                shape.moveTo(true);
+                rectList.get(pos[1]).get(pos[0]).setColor(Color.RED);
+                force();
+            }
         }
     }
 
     public void moveRight() {
-        rectList.get(currentY).get(currentX).setColor(Color.WHITE);
-        if (currentX < Table.WIDTH - 1) {
-            currentX++;
-            currentY--;
-            rectList.get(currentY).get(currentX).setColor(Color.RED);
-            force();
+        for(int i=0; i<shape.getRectCount(); i++) {
+            int[] pos = shape.getPos(i);
+            rectList.get(pos[1]).get(pos[0]).setColor(Color.WHITE);
+            if (pos[0] < Table.WIDTH - 1) {
+                shape.moveTo(false);
+                rectList.get(pos[1]).get(pos[0]).setColor(Color.RED);
+                force();
+            }
         }
     }
 
     public void force() {
-        if(currentY == 0){
+        if(curr == 0){
             shape = new I(rectList);
         }
 
@@ -54,19 +55,12 @@ public class Move {
                 clearRow(i);
             }
             clean = false;
-            rowToClean = -1;
         }
 
-        for (int i = 0; i < Table.HEIGHT; i++) {
-            for (int j = 0; j < Table.WIDTH; j++) {
-                Rects rect = rectList.get(i).get(j);
-                if (i == currentY && j == currentX) {
-                    shape.MoveDown(currentY, currentX);
-                    //rect.setColor(Color.RED);
-                } else if (!rect.getHely()) {
-                    rect.setColor(Color.WHITE);
-                    rect.setRect();
-                }
+        for(int i=0; i<shape.getRectCount(); i++){
+            int[] pos = shape.getPos(i);
+            if(shape.isPositive(pos[0]) && shape.isPositive(pos[1])){
+                shape.MoveDown(pos[0], pos[1]);
             }
         }
 
@@ -74,17 +68,26 @@ public class Move {
             Over();
         }
 
-        if (collideOrEnd(currentX, currentY)) {
-            if (allOneColor(currentY)) {
-                clean = true;
-                rowToClean = currentY;
+        Collide();
+    }
+
+    public void Collide(){
+        for(int i=0; i<shape.getRectCount(); i++){
+            int[] pos = shape.getPos(i);
+            if (collideOrEnd(pos[0], pos[1])) {
+                if (allOneColor(pos[1])) {
+                    clean = true;
+                }
+                //Z type
+                //rectList.get(pos[1]-1).get(pos[0]).setHely(true);
+                //rectList.get(pos[1]).get(pos[0]-1).setHely(true);
+
+                //I type
+                rectList.get(pos[1]).get(pos[0]).setHely(true);
+                rectList.get(pos[1]-1).get(pos[0]).setHely(true);
+            } else {
+                curr++;
             }
-            rectList.get(currentY).get(currentX).setHely(true);
-            rectList.get(currentY-1).get(currentX).setHely(true);
-            currentX = 2;
-            currentY = 0;
-        } else {
-            currentY++;
         }
     }
 

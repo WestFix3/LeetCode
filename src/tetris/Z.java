@@ -4,11 +4,12 @@ import javafx.scene.paint.Color;
 
 import java.util.List;
 
-public class I extends Shape {
+public class Z extends Shape {
     private int[] x;
     private int[] y;
     public List<List<Rects>> rectList;
-    public I(List<List<Rects>> rectList){
+
+    public Z(List<List<Rects>> rectList){
         super(rectList);
         this.rectList = rectList;
         setRectCount(2);
@@ -18,9 +19,9 @@ public class I extends Shape {
 
     @Override
     public void MoveDown(int newX, int newY){
-        x[0] = newX-1;
-        x[1] = newX;
-        y[0] = newY;
+        x[0] = newX;
+        x[1] = newX-1;
+        y[0] = newY-1;
         y[1] = newY;
         for(int i=0; i<x.length; i++){
             if(isPositive(x[i]-1) && isPositive(y[i]-1)) {

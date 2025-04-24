@@ -22,27 +22,11 @@ public class Move {
     }
 
     public void moveLeft() {
-        for(int i=0; i<shape.getRectCount(); i++){
-            int[] pos = shape.getPos(i);
-            rectList.get(pos[1]).get(pos[0]).setColor(Color.WHITE);
-            if (pos[0] > 0) {
-                shape.moveTo(true);
-                rectList.get(pos[1]).get(pos[0]).setColor(Color.RED);
-                force();
-            }
-        }
+        shape.moveTo(true);
     }
 
     public void moveRight() {
-        for(int i=0; i<shape.getRectCount(); i++) {
-            int[] pos = shape.getPos(i);
-            rectList.get(pos[1]).get(pos[0]).setColor(Color.WHITE);
-            if (pos[0] < Table.WIDTH - 1) {
-                shape.moveTo(false);
-                rectList.get(pos[1]).get(pos[0]).setColor(Color.RED);
-                force();
-            }
-        }
+        shape.moveTo(false);
     }
 
     public void force() {
@@ -56,12 +40,9 @@ public class Move {
             }
             clean = false;
         }
-
-        for(int i=0; i<shape.getRectCount(); i++){
-            int[] pos = shape.getPos(i);
-            if(shape.isPositive(pos[0]) && shape.isPositive(pos[1])){
-                shape.MoveDown(pos[0], pos[1]);
-            }
+        //kiirLista();
+        if(shape.MoveDown()){
+            curr = Table.HEIGHT-2;
         }
 
         if (over) {
@@ -69,13 +50,18 @@ public class Move {
         }
 
         Collide();
+        curr++;
+
+        if(curr == Table.HEIGHT-1){
+            curr = 0;
+        }
     }
 
     public void Collide(){
-        for(int i=0; i<shape.getRectCount(); i++){
+        for(int i=0; i<shape.getRectCount()-1; i++){
             int[] pos = shape.getPos(i);
             if (collideOrEnd(pos[0], pos[1])) {
-                if (allOneColor(pos[1])) {
+                if (allOneColor(pos[0])) {
                     clean = true;
                 }
                 //Z type
@@ -83,21 +69,22 @@ public class Move {
                 //rectList.get(pos[1]).get(pos[0]-1).setHely(true);
 
                 //I type
-                rectList.get(pos[1]).get(pos[0]).setHely(true);
-                rectList.get(pos[1]-1).get(pos[0]).setHely(true);
-            } else {
-                curr++;
+                rectList.get(pos[0]).get(pos[1]).setHely(true);
+                rectList.get(pos[0]-1).get(pos[1]).setHely(true);
             }
         }
     }
 
+
     private boolean collideOrEnd(int x, int y) {
-        if (y < Table.HEIGHT - 1) {
-            if (rectList.get(y + 1).get(x).getColor() == Color.RED) {
-                if (isItOver(x, y)) {
-                    over = true;
+        if (x < Table.HEIGHT-1) {
+            if (y >= 0 && y < Table.WIDTH && x + 1 >= 0 && x + 1 < Table.HEIGHT-1) {
+                if (rectList.get(x + 1).get(y).getHely()) {
+                    if (isItOver(x, y)) {
+                        over = true;
+                    }
+                    return true;
                 }
-                return true;
             }
         } else {
             return true;
@@ -105,6 +92,7 @@ public class Move {
 
         return false;
     }
+
 
     private boolean allOneColor(int y) {
         Color firstColor = rectList.get(y).get(0).getColor();
@@ -127,7 +115,7 @@ public class Move {
     }
 
     private boolean isItOver(int x, int y) {
-        if (y == 0) {
+        if(y == 0){
             return true;
         }
         return false;
@@ -141,7 +129,7 @@ public class Move {
     public void kiirLista(){
         for(int i=0; i< Table.HEIGHT; i++){
             for(int j=0; j<Table.WIDTH; j++){
-                System.out.print(rectList.get(i).get(j).getHely() + " ");
+                System.out.print(rectList.get(i).get(j).getColor() + " ");
             }
             System.out.println();
         }

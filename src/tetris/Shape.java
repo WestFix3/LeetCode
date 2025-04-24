@@ -11,7 +11,7 @@ public abstract class Shape {
         this.rectList = rectList;
     }
 
-    public abstract void MoveDown(int x, int y);
+    public abstract boolean MoveDown();
 
     public abstract void moveTo(boolean irany);
 

@@ -18,15 +18,11 @@ public class Z extends Shape {
     }
 
     @Override
-    public void MoveDown(int newX, int newY){
-        x[0] = newX;
-        x[1] = newX-1;
-        y[0] = newY-1;
-        y[1] = newY;
+    public boolean MoveDown(){
         for(int i=0; i<x.length; i++){
-            if(isPositive(x[i]-1) && isPositive(y[i]-1)) {
-                rectList.get(x[i]).get(y[i]).setColor(Color.WHITE);
-                rectList.get(x[i]).get(y[i]).setRect();
+            if(isPositive(x[i]-1) && isPositive(y[i])) {
+                rectList.get(x[i]-1).get(y[i]).setColor(Color.WHITE);
+                rectList.get(x[i]-1).get(y[i]).setRect();
             }
 
             if(isPositive(x[i]) && isPositive(y[i])) {
@@ -35,6 +31,8 @@ public class Z extends Shape {
             }
             x[i]++;
         }
+
+        return false;
     }
 
     @Override

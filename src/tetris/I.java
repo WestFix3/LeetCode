@@ -17,32 +17,50 @@ public class I extends Shape {
     }
 
     @Override
-    public void MoveDown(int newX, int newY){
-        x[0] = newX-1;
-        x[1] = newX;
-        y[0] = newY;
-        y[1] = newY;
+    public boolean MoveDown(){
         for(int i=0; i<x.length; i++){
-            if(isPositive(x[i]-1) && isPositive(y[i]-1)) {
+            if(isPositive(x[i]) && isPositive(y[i])){
+                if(rectList.get(x[i]).get(y[i]).getHely()){
+                    //!!!System.out.println("Collision detected at: " + x[i] + ", " + y[i]);
+                    return true;
+                }
                 rectList.get(x[i]).get(y[i]).setColor(Color.WHITE);
                 rectList.get(x[i]).get(y[i]).setRect();
             }
+        }
 
+        for(int i=0; i<x.length; i++){
+            x[i]++;
+        }
+
+        for(int i=0; i<x.length; i++){
             if(isPositive(x[i]) && isPositive(y[i])) {
                 rectList.get(x[i]).get(y[i]).setColor(Color.RED);
                 rectList.get(x[i]).get(y[i]).setRect();
+                //!!!System.out.println((i+1) + ". Moved to: " + x[i] + ", " + y[i]);
             }
-            x[i]++;
         }
+
+        return false;
     }
+
 
     @Override
     public void moveTo(boolean irany){
         for(int i=0; i<y.length; i++){
+            rectList.get(x[i]).get(y[i]).setColor(Color.WHITE);
             if(irany){
-                y[i] -= 1;
+                if(x[i] > 0){
+                    y[i] -= 1;
+                    x[i] -= 1;
+                    rectList.get(x[i]).get(y[i]).setColor(Color.RED);
+                }
             }else{
-                y[i] += 1;
+                if(x[i] < Table.WIDTH - 1){
+                    y[i] += 1;
+                    x[i] -= 1;
+                    rectList.get(x[i]).get(y[i]).setColor(Color.RED);
+                }
             }
         }
     }

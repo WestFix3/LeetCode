@@ -26,8 +26,9 @@ public class Main {
     // Input állapot nyomon követése
     private static boolean keyProcessed = false;
 
-    // Textúra ID
+    // Textúra ID-k
     private static int playerTexture;
+    private static int backgroundTexture; // ÚJ: Háttér textúra ID
 
     public static void main(String[] args) {
         // GLFW inicializálása
@@ -36,7 +37,7 @@ public class Main {
         }
 
         // Ablak létrehozása
-        long window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "16x16 Pálya + Karakter", 0, 0);
+        long window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "16x16 Pálya + Karakter + Háttér", 0, 0);
         if (window == 0) {
             glfwTerminate();
             throw new IllegalStateException("Ablak létrehozása sikertelen!");
@@ -46,8 +47,9 @@ public class Main {
         glfwMakeContextCurrent(window);
         GL.createCapabilities();
 
-        // Textúra betöltése
+        // Textúrák betöltése
         playerTexture = loadTexture("C:\\Users\\Felhasználó\\Desktop\\SZAKDOLGOZAT\\character1.png");
+        backgroundTexture = loadTexture("C:\\Users\\Felhasználó\\Desktop\\SZAKDOLGOZAT\\grass.png");
 
         // 2D-s nézet beállítása
         glMatrixMode(GL_PROJECTION);
@@ -56,14 +58,17 @@ public class Main {
 
         // Fő játékciklus
         while (!glfwWindowShouldClose(window)) {
-            // Háttörlés (fekete)
+            // Háttörlés (fekete) - Ezt megtarthatod, de a háttérkép eltakarja.
             glClear(GL_COLOR_BUFFER_BIT);
+
+            // ÚJ: Háttér rajzolása (először, hogy alul legyen)
+            renderBackground();
 
             // Input kezelése
             handleInput(window);
 
             // Pálya és játékos rajzolása
-            renderGrid();
+            //renderGrid();
             renderPlayer();
 
             // Buffercsere
@@ -73,10 +78,11 @@ public class Main {
 
         // Tisztítás
         glDeleteTextures(playerTexture);
+        glDeleteTextures(backgroundTexture); // ÚJ: Háttér textúra felszabadítása
         glfwTerminate();
     }
 
-    // Textúra betöltése
+    // Textúra betöltése (ugyanaz, mint eredetileg)
     private static int loadTexture(String filePath) {
         int textureID = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, textureID);
@@ -169,6 +175,22 @@ public class Main {
         glVertex2f((playerX + 1) * CELL_SIZE, (playerY + 1) * CELL_SIZE);
         glTexCoord2f(0, 1);
         glVertex2f(playerX * CELL_SIZE, (playerY + 1) * CELL_SIZE);
+        glEnd();
+
+        glDisable(GL_TEXTURE_2D);
+    }
+
+    // ÚJ: Háttér rajzolása
+    private static void renderBackground() {
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, backgroundTexture);
+        glColor3f(1.0f, 1.0f, 1.0f); // Fontos, hogy fehér legyen, hogy a textúra színei érvényesüljenek
+
+        glBegin(GL_QUADS);
+        glTexCoord2f(0, 0); glVertex2f(0, 0);
+        glTexCoord2f(1, 0); glVertex2f(WINDOW_WIDTH, 0);
+        glTexCoord2f(1, 1); glVertex2f(WINDOW_WIDTH, WINDOW_HEIGHT);
+        glTexCoord2f(0, 1); glVertex2f(0, WINDOW_HEIGHT);
         glEnd();
 
         glDisable(GL_TEXTURE_2D);

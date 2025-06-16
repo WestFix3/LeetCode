@@ -1,6 +1,7 @@
 package Soul_Knight.world;
 
-import Soul_Knight.rendering.Texture; // Új import
+import Soul_Knight.rendering.Texture;
+import Soul_Knight.physics.Rectangle; // ÚJ IMPORT!
 
 public class Tile {
     public enum TileType {
@@ -19,7 +20,7 @@ public class Tile {
         this.gridX = gridX;
         this.gridY = gridY;
         this.size = size;
-        this.texture = texture; // Textúra inicializálása
+        this.texture = texture;
     }
 
     public TileType getType() {
@@ -40,5 +41,13 @@ public class Tile {
 
     public Texture getTexture() {
         return texture;
+    }
+
+    /**
+     * Visszaadja a csempe határoló téglalapját a képernyő koordinátáiban.
+     * @return Egy Rectangle objektum, ami a csempe fizikai határait reprezentálja.
+     */
+    public Rectangle getBounds() {
+        return new Rectangle(gridX * size, gridY * size, size, size);
     }
 }

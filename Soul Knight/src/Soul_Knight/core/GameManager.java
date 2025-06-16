@@ -15,7 +15,7 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
 import java.nio.IntBuffer;
-import java.nio.DoubleBuffer; // EZ AZ ÚJ IMPORT!
+import java.nio.DoubleBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,38 +39,34 @@ public class GameManager {
     private Dungeon currentDungeon;
     private MapRenderer mapRenderer;
     private InputHandler inputHandler;
-    private CollisionManager collisionManager; // ÚJ: Ütközés kezelő
+    private CollisionManager collisionManager;
 
     private Texture playerTexture;
     private Map<Tile.TileType, Texture> tileTextures;
-    private Texture enemyTexture; // ÚJ: Ellenség textúra
+    private Texture enemyTexture;
 
-    private List<Projectile> projectiles; // ÚJ: Aktív lövedékek listája
+    private List<Projectile> projectiles;
 
     public void run() {
-        init(); // Inicializálás
-        loop(); // Játék loop
-        cleanup(); // Tisztítás
+        init();
+        loop();
+        cleanup();
     }
 
     private void init() {
-        // Inicializálja a GLFW-t
         if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
 
-        // Ablak konfiguráció
-        glfwDefaultWindowHints(); // Alapértelmezett hint-ek
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // Az ablak kezdetben rejtett
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // Az ablak átméretezhető
+        glfwDefaultWindowHints();
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-        // Ablak létrehozása
         window = glfwCreateWindow(width, height, title, NULL, NULL);
         if (window == NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
 
-        // Ablak méretének lekérdezése (ha a hint-ekkel nem fix méretet állítunk be)
         try (MemoryStack stack = stackPush()) {
             IntBuffer pWidth = stack.mallocInt(1);
             IntBuffer pHeight = stack.mallocInt(1);
@@ -79,10 +75,8 @@ public class GameManager {
             height = pHeight.get(0);
         }
 
-        // Input kezelő beállítása
         inputHandler = new InputHandler(window);
 
-        // Középre igazítás
         GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         glfwSetWindowPos(
                 window,
@@ -90,28 +84,23 @@ public class GameManager {
                 (vidmode.height() - height) / 2
         );
 
-        // OpenGL kontextus létrehozása
         glfwMakeContextCurrent(window);
-        GL.createCapabilities(); // Inicializálja az OpenGL képességeket
+        GL.createCapabilities();
 
-        // V-Sync bekapcsolása (képkockaszám szinkronizálása a monitor frissítési gyakoriságával)
         glfwSwapInterval(1);
 
-        // Az ablak láthatóvá tétele
         glfwShowWindow(window);
 
-        // OpenGL alap beállítások 2D-hez (projektor mátrix)
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        glOrtho(0.0, width, height, 0.0, -1.0, 1.0); // 2D ortogonális projekció (felső-bal sarok 0,0)
+        glOrtho(0.0, width, height, 0.0, -1.0, 1.0);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
 
-        glEnable(GL_BLEND); // Áttetszőség engedélyezése
+        glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glEnable(GL_TEXTURE_2D); // Textúra engedélyezése OpenGL-ben
+        glEnable(GL_TEXTURE_2D);
 
-        // --- Textúrák betöltése ---
         playerTexture = TextureLoader.loadTexture("character1.png");
         if (playerTexture == null) {
             System.err.println("HIBA: Nem sikerült betölteni a játékos textúrát.");
@@ -121,90 +110,90 @@ public class GameManager {
         tileTextures.put(Tile.TileType.FLOOR, TextureLoader.loadTexture("grass.png"));
         tileTextures.put(Tile.TileType.WALL, TextureLoader.loadTexture("wall_tile.png"));
 
-        enemyTexture = TextureLoader.loadTexture("enemy.png"); // ÚJ: Ellenség textúra betöltése
+        enemyTexture = TextureLoader.loadTexture("enemy.png");
         if (enemyTexture == null) {
             System.err.println("HIBA: Nem sikerült betölteni az ellenség textúrát.");
         }
 
-        // Ellenőrizzük, hogy minden textúra betöltődött-e
         if (tileTextures.get(Tile.TileType.FLOOR) == null || tileTextures.get(Tile.TileType.WALL) == null) {
             System.err.println("HIBA: Nem sikerült betölteni az egyik csempe textúrát.");
         }
-        // --- Textúrák betöltése vége ---
 
-        // Játék entitások inicializálása
-        player = new Player(width / 2, height / 2, 50, 50, playerTexture, window); // Ablak handle átadása a Player-nek
+        player = new Player(width / 2, height / 2, 50, 50, playerTexture, window);
 
-        // Pálya inicializálása
-        currentDungeon = new Dungeon(20, 20, 32, tileTextures, enemyTexture); // Ellenség textúra átadása
+        currentDungeon = new Dungeon(20, 20, 32, tileTextures, enemyTexture);
         mapRenderer = new MapRenderer();
-        collisionManager = new CollisionManager(currentDungeon); // Ütközés kezelő inicializálása
+        collisionManager = new CollisionManager(currentDungeon);
 
-        projectiles = new ArrayList<>(); // Lövedékek listájának inicializálása
+        projectiles = new ArrayList<>();
     }
 
     private void loop() {
         double lastTime = glfwGetTime();
         double accumulator = 0.0;
-        final double frameTime = 1.0 / 60.0; // Frissítés 60 FPS-en
+        final double frameTime = 1.0 / 60.0;
 
         while (!glfwWindowShouldClose(window)) {
+            // A KULCSFONTOSSÁGÚ VÁLTOZTATÁS ITT VAN:
+            // 1. ELŐSZÖR az input handler állapotát frissítjük az ELŐZŐ KÉPKOCKA szerint.
+            inputHandler.update();
+
+            // 2. AZUTÁN dolgozzuk fel a jelenlegi képkocka GLFW eseményeit (ez frissíti a 'mouseButtons' tömböt).
+            glfwPollEvents();
+
             double currentTime = glfwGetTime();
             double deltaTime = currentTime - lastTime;
             lastTime = currentTime;
             accumulator += deltaTime;
 
-            // Frissítés fix lépésekben
             while (accumulator >= frameTime) {
-                update((float) frameTime, currentTime); // Átadjuk a currentTime-et
+                update((float) frameTime, currentTime);
                 accumulator -= frameTime;
             }
 
-            render(); // Rajzolás
-            glfwSwapBuffers(window); // Bufferek cseréje (az elkészült kép megjelenítése)
-            glfwPollEvents(); // Események feldolgozása (input, ablak események)
+            render();
+            glfwSwapBuffers(window);
         }
     }
 
     private void update(float deltaTime, double currentTime) {
-        // Játékos mozgás frissítése input és ütközés alapján
-        // A Player.update() visszatérhet az új lövedékekkel
         player.update(deltaTime, inputHandler, collisionManager, currentTime);
 
-        // Kezeljük a játékos által kilőtt lövedékeket
-        // Ha a Player.update() egy Projectile-lal térne vissza:
-        Projectile newProjectile = player.getCurrentWeapon().shoot(player, player.getX(), player.getY(), (float)getCursorX(), (float)getCursorY(), (float)currentTime);
+        Projectile newProjectile = null;
+        if (inputHandler.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
+            System.out.println("Lövés kérés érzékelve!");
+            newProjectile = player.getCurrentWeapon().shoot(player, player.getX(), player.getY(), (float)getCursorX(), (float)getCursorY(), (float)currentTime);
+            if (newProjectile != null) {
+                System.out.println("Lövedék kilőve!");
+            } else {
+                System.out.println("Lövés kérés, de a fegyver cooldownon van vagy más okból nem lőhetett.");
+            }
+        }
+
         if (newProjectile != null) {
             projectiles.add(newProjectile);
         }
 
-        // Ellenségek frissítése (egyelőre nem mozognak)
         for (Enemy enemy : currentDungeon.getMainRoom().getEnemies()) {
             enemy.update(deltaTime);
         }
 
-        // Lövedékek frissítése és ütközések kezelése
         Iterator<Projectile> projectileIterator = projectiles.iterator();
         while (projectileIterator.hasNext()) {
             Projectile projectile = projectileIterator.next();
             projectile.update(deltaTime);
 
-            // Lövedék ütközés falakkal
-            int projGridX = (int) (projectile.getX() / currentDungeon.getMainRoom().getTileSize());
-            int projGridY = (int) (projectile.getY() / currentDungeon.getMainRoom().getTileSize());
-
-            // Ellenőrizzük a lövedék körüli csempéket
             boolean hitWall = false;
+            int tileSize = currentDungeon.getMainRoom().getTileSize();
+
+            int projGridX = (int) (projectile.getX() / tileSize);
+            int projGridY = (int) (projectile.getY() / tileSize);
+
             for (int x = projGridX - 1; x <= projGridX + 1; x++) {
                 for (int y = projGridY - 1; y <= projGridY + 1; y++) {
                     Tile tile = currentDungeon.getMainRoom().getTile(x, y);
                     if (tile != null && tile.getType() == Tile.TileType.WALL) {
-                        // Kisebb optimalizálás: nem kell egy új entitást létrehozni minden egyes ellenőrzéshez
-                        // Ehelyett használjuk a Tile bounds-át (ha hozzáadjuk) vagy a tile méretét és pozícióját közvetlenül
-                        // Jelenlegi megoldás: létrehoz egy ideiglenes Entitást a fal reprezentálására
-                        if (collisionManager.checkCollision(projectile, new Soul_Knight.entities.Entity(x * tile.getSize(), y * tile.getSize(), tile.getSize(), tile.getSize()) {
-                            @Override public void update(float dt, Object... args) {} @Override public void render() {}
-                        })) {
+                        if (collisionManager.checkTileCollision(projectile, tile)) {
                             hitWall = true;
                             break;
                         }
@@ -213,71 +202,56 @@ public class GameManager {
                 if (hitWall) break;
             }
             if (hitWall) {
-                projectile.setAlive(false); // A lövedék eltűnik falba ütközéskor
+                projectile.setAlive(false);
             }
 
-            // Lövedék ütközés ellenségekkel
             for (Enemy enemy : currentDungeon.getMainRoom().getEnemies()) {
                 if (enemy.isAlive() && collisionManager.checkCollision(projectile, enemy)) {
                     enemy.takeDamage(projectile.getDamage());
-                    projectile.setAlive(false); // A lövedék eltűnik, ha eltalál egy ellenséget
-                    break; // Egy lövedék csak egy ellenséget sebezzen
+                    projectile.setAlive(false);
+                    break;
                 }
             }
 
-            // Ha a lövedék nem él, távolítsuk el
             if (!projectile.isAlive()) {
                 projectileIterator.remove();
             }
         }
 
-        // Halott ellenségek eltávolítása
         currentDungeon.getMainRoom().getEnemies().removeIf(enemy -> !enemy.isAlive());
     }
 
     private void render() {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Tisztítja a képernyőt (fekete háttér)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Pálya rajzolása
         mapRenderer.render(currentDungeon);
 
-        // Ellenségek rajzolása
         for (Enemy enemy : currentDungeon.getMainRoom().getEnemies()) {
             enemy.render();
         }
 
-        // Játékos rajzolása
         player.render();
 
-        // Lövedékek rajzolása
         for (Projectile projectile : projectiles) {
             projectile.render();
         }
     }
 
     private void cleanup() {
-        // Callback-ek felszabadítása
         glfwFreeCallbacks(window);
-        // Ablak felszabadítása
         glfwDestroyWindow(window);
-        // GLFW felszabadítása és a hibakezelő leállítása
         glfwTerminate();
         glfwSetErrorCallback(null).free();
 
-        // --- Textúrák felszabadítása ---
         if (playerTexture != null) playerTexture.delete();
         if (tileTextures != null) {
             for (Texture texture : tileTextures.values()) {
                 if (texture != null) texture.delete();
             }
         }
-        if (enemyTexture != null) enemyTexture.delete(); // ÚJ: Ellenség textúra felszabadítása
-        // --- Textúrák felszabadítása vége ---
+        if (enemyTexture != null) enemyTexture.delete();
     }
 
-    /**
-     * Segédmetódus az egér X koordinátájának lekéréséhez.
-     */
     private double getCursorX() {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             DoubleBuffer xPos = stack.mallocDouble(1);
@@ -287,9 +261,6 @@ public class GameManager {
         }
     }
 
-    /**
-     * Segédmetódus az egér Y koordinátájának lekéréséhez.
-     */
     private double getCursorY() {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             DoubleBuffer xPos = stack.mallocDouble(1);

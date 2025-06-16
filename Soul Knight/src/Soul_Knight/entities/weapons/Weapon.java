@@ -19,7 +19,7 @@ public class Weapon {
         this.fireRate = fireRate;
         this.projectileSpeed = projectileSpeed;
         this.projectileSize = projectileSize;
-        this.lastShotTime = 0; // Kezdetben azonnal lőhet
+        this.lastShotTime = -1000.0f; // Biztosítja, hogy az első lövés azonnal lehetséges legyen
     }
 
     /**
@@ -33,24 +33,28 @@ public class Weapon {
      * @return Egy Projectile objektum, ha sikeresen lőtt, különben null.
      */
     public Projectile shoot(Entity shooter, float startX, float startY, float targetX, float targetY, float currentTime) {
-        if (currentTime - lastShotTime < 1.0f / fireRate) {
-            return null; // Még cooldownon van
-        }
+        // --- COOLDOWN ELLENŐRZÉS IDEIGLENESEN KIKAPCSOLVA A DEBUGOLÁSHOZ ---
+        // if (currentTime - lastShotTime < 1.0f / fireRate) {
+        //     return null; // Még cooldownon van
+        // }
+        // -------------------------------------------------------------------
 
         // Irányvektor kiszámítása
         float dirX = targetX - startX;
         float dirY = targetY - startY;
         float length = (float) Math.sqrt(dirX * dirX + dirY * dirY);
 
-        if (length == 0) return null; // Ne osszunk nullával
+        if (length == 0) { // Elkerüljük a nullával való osztást
+            System.out.println("Célpont túl közel van, vagy ugyanazon a pozíción, nem lehet lövedéket kilőni.");
+            return null;
+        }
 
         dirX /= length; // Normalizálás
         dirY /= length;
 
-        lastShotTime = currentTime; // Frissítjük az utolsó lövés idejét
+        lastShotTime = currentTime; // Frissítjük az utolsó lövés idejét az aktuális időre
 
         // Létrehozzuk a lövedéket
-        // A lövedéket elhelyezzük a játékos közepétől, és a mérete legyen kisebb
         float projX = startX + shooter.getWidth() / 2 - projectileSize / 2;
         float projY = startY + shooter.getHeight() / 2 - projectileSize / 2;
 

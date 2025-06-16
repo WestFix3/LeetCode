@@ -1,10 +1,10 @@
 package Soul_Knight.world;
 
-import Soul_Knight.entities.Enemy; // ÚJ IMPORT!
-import Soul_Knight.rendering.Texture; // ÚJ IMPORT!
-import java.util.ArrayList; // ÚJ IMPORT!
-import java.util.List; // ÚJ IMPORT!
-import java.util.Map; // ÚJ IMPORT!
+import Soul_Knight.entities.Enemy;
+import Soul_Knight.rendering.Texture;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class Room {
     private Tile[][] tiles;
@@ -12,8 +12,8 @@ public class Room {
     private int heightTiles;
     private int tileSize;
     private Map<Tile.TileType, Texture> tileTextures;
-    private List<Enemy> enemies; // ÚJ: Ellenségek listája a szobában
-    private Texture enemyTexture; // ÚJ: Ellenség textúra
+    private List<Enemy> enemies;
+    private Texture enemyTexture;
 
     public Room(int widthTiles, int heightTiles, int tileSize, Map<Tile.TileType, Texture> tileTextures, Texture enemyTexture) {
         this.widthTiles = widthTiles;
@@ -21,8 +21,8 @@ public class Room {
         this.tileSize = tileSize;
         this.tiles = new Tile[widthTiles][heightTiles];
         this.tileTextures = tileTextures;
-        this.enemies = new ArrayList<>(); // Inicializáljuk a listát
-        this.enemyTexture = enemyTexture; // Ellenség textúra átadása
+        this.enemies = new ArrayList<>();
+        this.enemyTexture = enemyTexture;
         initializeRoom();
     }
 
@@ -38,21 +38,32 @@ public class Room {
             }
         }
 
-        // Példa egy "ajtóra" (ez sokkal komplexebb lesz valójában)
-        tiles[widthTiles / 2][0] = new Tile(Tile.TileType.FLOOR, widthTiles / 2, 0, tileSize, tileTextures.get(Tile.TileType.FLOOR));
-        tiles[widthTiles / 2][heightTiles - 1] = new Tile(Tile.TileType.FLOOR, widthTiles / 2, heightTiles - 1, tileSize, tileTextures.get(Tile.TileType.FLOOR));
-        tiles[0][heightTiles / 2] = new Tile(Tile.TileType.FLOOR, 0, heightTiles / 2, tileSize, tileTextures.get(Tile.TileType.FLOOR));
-        tiles[widthTiles - 1][heightTiles / 2] = new Tile(Tile.TileType.FLOOR, widthTiles - 1, heightTiles / 2, tileSize, tileTextures.get(Tile.TileType.FLOOR));
+        // Példa "ajtókra"
 
-        // ----- KEZDETI ELLENSÉGEK SPAWNOLÁSA -----
-        // Példa: spawnolunk 3 ellenséget a szoba közepére
-        for (int i = 0; i < 3; i++) {
-            // Helyezzük el őket véletlenszerűen a szoba "padló" részén
-            float enemyX = (float) ((widthTiles / 2 - 2 + Math.random() * 4) * tileSize);
-            float enemyY = (float) ((heightTiles / 2 - 2 + Math.random() * 4) * tileSize);
-            enemies.add(new Enemy(enemyX, enemyY, 40, 40, enemyTexture, 50)); // 40x40 méret, 50 HP
+        // Felső ajtó (egy csempe, középen)
+        tiles[widthTiles / 2][0] = new Tile(Tile.TileType.FLOOR, widthTiles / 2, 0, tileSize, tileTextures.get(Tile.TileType.FLOOR));
+
+        // Alsó ajtó (egy csempe, középen)
+        tiles[widthTiles / 2][heightTiles - 1] = new Tile(Tile.TileType.FLOOR, widthTiles / 2, heightTiles - 1, tileSize, tileTextures.get(Tile.TileType.FLOOR));
+
+        // Bal ajtó (egy csempe, középen)
+        tiles[0][heightTiles / 2] = new Tile(Tile.TileType.FLOOR, 0, heightTiles / 2, tileSize, tileTextures.get(Tile.TileType.FLOOR));
+
+        // ----- JOBB OLDALI BEJÁRAT MÉRETÉNEK BEÁLLÍTÁSA -----
+        // Példa: 5 csempe magasságú ajtó a jobb oldalon, középen
+        // Feltételezzük, hogy a heightTiles páratlan, vagy elegendően nagy az 5 csempéhez
+        int doorHeight = 5; // Az ajtó magassága csempékben (Módosítva 3-ról 5-re)
+        int startY = heightTiles / 2 - (doorHeight / 2); // Kezdő Y pozíció a középtől
+
+        for (int y = 0; y < doorHeight; y++) {
+            // Győződjünk meg róla, hogy az Y koordináta érvényes a pályán belül
+            if (startY + y >= 0 && startY + y < heightTiles) {
+                tiles[widthTiles - 1][startY + y] = new Tile(Tile.TileType.FLOOR, widthTiles - 1, startY + y, tileSize, tileTextures.get(Tile.TileType.FLOOR));
+            }
         }
-        // ------------------------------------------
+        // -----------------------------------------------------
+
+        // Később itt lehet ellenségeket, tárgyakat spawnolni
     }
 
     public Tile getTile(int x, int y) {

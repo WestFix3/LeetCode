@@ -21,39 +21,34 @@ public class MapRenderer {
             for (int y = 0; y < room.getHeightTiles(); y++) {
                 Tile tile = room.getTile(x, y);
                 if (tile != null) {
-                    Texture texture = tile.getTexture(); // Lekérjük a csempe textúráját
+                    Texture texture = tile.getTexture();
                     if (texture != null) {
-                        texture.bind(); // Bekapcsolja a csempe textúráját
+                        texture.bind();
                         glColor3f(1.0f, 1.0f, 1.0f); // Fehér szín, hogy a textúra színei érvényesüljenek
 
-                        // A csempe pozíciója a képernyőn
                         float screenX = x * tileSize;
                         float screenY = y * tileSize;
 
                         glBegin(GL_QUADS);
-                        // Textúra koordináták (0,0) a bal alsó, (1,1) a jobb felső
-                        // Mivel az STBImage alapértelmezetten felülről-lefelé olvassa be,
-                        // és az OpenGL alulról-felfelé rajzolja a textúrákat,
-                        // ezért a vertikális koordinátákat felcserélhetjük (vagy stbi_set_flip_vertically_on_load(true)
-                        // használatával fordíthatunk a betöltéskor).
-                        // Az STBImage esetében a stbi_set_flip_vertically_on_load(true) használatával az (0,0) a bal felső sarok lesz a textúrában.
-                        // Tehát a Vertex 2f(x,y) a bal felső sarka lesz a négyzetnek.
-                        glTexCoord2f(0, 0); glVertex2f(screenX, screenY); // Bal felső sarok
-                        glTexCoord2f(1, 0); glVertex2f(screenX + tileSize, screenY); // Jobb felső sarok
-                        glTexCoord2f(1, 1); glVertex2f(screenX + tileSize, screenY + tileSize); // Jobb alsó sarok
-                        glTexCoord2f(0, 1); glVertex2f(screenX, screenY + tileSize); // Bal alsó sarok
+                        // TEXTÚRA KOORDINÁTÁK JAVÍTVA A 180 FOKOS ELFORGATÁSRA
+                        // Az (0,0) textúra koordináta a betöltött kép "alján" van, ha a stbi_set_flip_vertically_on_load(true) be van állítva.
+                        // Ahhoz, hogy a kép helyesen jelenjen meg (a fájl teteje a quad tetején), a V koordinátákat fordítva adjuk meg.
+                        glTexCoord2f(0, 1); glVertex2f(screenX, screenY); // Bal felső sarok (quad) -> (0,1) textúra koordináta (textúra bal alsó)
+                        glTexCoord2f(1, 1); glVertex2f(screenX + tileSize, screenY); // Jobb felső sarok (quad) -> (1,1) textúra koordináta (textúra jobb alsó)
+                        glTexCoord2f(1, 0); glVertex2f(screenX + tileSize, screenY + tileSize); // Jobb alsó sarok (quad) -> (1,0) textúra koordináta (textúra jobb felső)
+                        glTexCoord2f(0, 0); glVertex2f(screenX, screenY + tileSize); // Bal alsó sarok (quad) -> (0,0) textúra koordináta (textúra bal felső)
                         glEnd();
 
-                        texture.unbind(); // Kikapcsolja a textúrát
+                        texture.unbind();
                     } else {
                         // Ha valamiért nincs textúra (pl. hiba), akkor rajzoljon egy színes négyzetet
                         float colorR, colorG, colorB;
                         switch (tile.getType()) {
                             case FLOOR:
-                                colorR = 0.7f; colorG = 0.7f; colorB = 0.7f; // Világosszürke
+                                colorR = 0.7f; colorG = 0.7f; colorB = 0.7f;
                                 break;
                             case WALL:
-                                colorR = 0.3f; colorG = 0.3f; colorB = 0.3f; // Sötétszürke
+                                colorR = 0.3f; colorG = 0.3f; colorB = 0.3f;
                                 break;
                             default:
                                 colorR = 1.0f; colorG = 0.0f; colorB = 1.0f; // Magenta, hiba jelzésére
@@ -72,6 +67,6 @@ public class MapRenderer {
                 }
             }
         }
-        glColor3f(1.0f, 1.0f, 1.0f); // Visszaállítja a fehér színt
+        glColor3f(1.0f, 1.0f, 1.0f);
     }
 }

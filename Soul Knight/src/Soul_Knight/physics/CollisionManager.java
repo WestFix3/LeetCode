@@ -2,6 +2,7 @@ package Soul_Knight.physics;
 
 import Soul_Knight.entities.Entity;
 import Soul_Knight.entities.Player;
+import Soul_Knight.entities.Projectile; // ÚJ IMPORT: Lövedék ütközéshez
 import Soul_Knight.world.Dungeon;
 import Soul_Knight.world.Tile;
 import Soul_Knight.world.Room;
@@ -29,61 +30,75 @@ public class CollisionManager {
     }
 
     /**
+     * Ellenőrzi, hogy egy entitás ütközik-e egy adott csempével.
+     * @param entity Az entitás.
+     * @param tile A csempe.
+     * @return Igaz, ha ütköznek, hamis egyébként.
+     */
+    public boolean checkTileCollision(Entity entity, Tile tile) {
+        if (entity == null || tile == null) return false;
+        return entity.getBounds().intersects(tile.getBounds());
+    }
+
+    /**
      * Feloldja a játékos és a falak közötti ütközéseket.
      * Ez a metódus megakadályozza, hogy a játékos átmenjen a falakon.
+     * A mozgás előtti pozíció alapján próbálja feloldani az ütközést.
      * @param player A játékos entitás.
+     * @param prevX A játékos előző X pozíciója.
+     * @param prevY A játékos előző Y pozíciója.
      */
-    public void resolvePlayerTileCollisions(Player player) {
+    public void resolvePlayerTileCollisions(Player player, float prevX, float prevY) {
         if (player == null || dungeon == null) return;
 
-        Room currentRoom = dungeon.getMainRoom(); // Feltételezzük, hogy egy szobában vagyunk
+        Room currentRoom = dungeon.getMainRoom();
         if (currentRoom == null) return;
 
-        int playerGridX = (int) (player.getX() / currentRoom.getTileSize());
-        int playerGridY = (int) (player.getY() / currentRoom.getTileSize());
+        // Ideiglenesen visszaállítjuk a játékost az előző pozíciójába
+        float originalX = player.getX();
+        float originalY = player.getY();
+        player.setX(prevX); // Visszaállítjuk az X pozíciót az ütközés előtti állapotra
+        player.setY(prevY); // Visszaállítjuk az Y pozíciót az ütközés előtti állapotra
 
-        // Ellenőrizzük a játékos körüli csempéket (3x3-as rácsban)
-        for (int x = playerGridX - 1; x <= playerGridX + 1; x++) {
-            for (int y = playerGridY - 1; y <= playerGridY + 1; y++) {
-                Tile tile = currentRoom.getTile(x, y);
+        // Ellenőrizzük a játékos X-irányú mozgását
+        player.setX(originalX); // A teljes X mozgás alkalmazása
+        if (checkPlayerCollidesWithWalls(player, currentRoom)) {
+            player.setX(prevX); // Ha ütközött, visszaállítjuk az X-et
+        }
+
+        // Ellenőrizzük a játékos Y-irányú mozgását
+        player.setY(originalY); // A teljes Y mozgás alkalmazása
+        if (checkPlayerCollidesWithWalls(player, currentRoom)) {
+            player.setY(prevY); // Ha ütközött, visszaállítjuk az Y-t
+        }
+    }
+
+    /**
+     * Segédmetódus, ami ellenőrzi, hogy a játékos ütközik-e falakkal az aktuális pozíciójában.
+     * @param player A játékos entitás.
+     * @param room Az aktuális szoba.
+     * @return Igaz, ha ütközik fallal, hamis egyébként.
+     */
+    private boolean checkPlayerCollidesWithWalls(Player player, Room room) {
+        Rectangle playerBounds = player.getBounds();
+        int tileSize = room.getTileSize();
+
+        // Ellenőrizzük a játékos hitboxát érintő csempéket
+        int minTileX = (int) (playerBounds.x / tileSize);
+        int maxTileX = (int) ((playerBounds.x + playerBounds.width) / tileSize);
+        int minTileY = (int) (playerBounds.y / tileSize);
+        int maxTileY = (int) ((playerBounds.y + playerBounds.height) / tileSize);
+
+        for (int y = minTileY; y <= maxTileY; y++) {
+            for (int x = minTileX; x <= maxTileX; x++) {
+                Tile tile = room.getTile(x, y);
                 if (tile != null && tile.getType() == Tile.TileType.WALL) {
-                    // Ha a csempe egy fal
-                    Rectangle playerBounds = player.getBounds();
-                    Rectangle tileBounds = new Rectangle(x * tile.getSize(), y * tile.getSize(), tile.getSize(), tile.getSize());
-
-                    if (playerBounds.intersects(tileBounds)) {
-                        // Ütközés történt, feloldjuk
-                        float overlapX = 0;
-                        float overlapY = 0;
-
-                        // Ütközési vektor kiszámítása
-                        if (playerBounds.x < tileBounds.x && playerBounds.x + playerBounds.width > tileBounds.x) {
-                            overlapX = (playerBounds.x + playerBounds.width) - tileBounds.x;
-                        } else if (playerBounds.x > tileBounds.x && tileBounds.x + tileBounds.width > playerBounds.x) {
-                            overlapX = (tileBounds.x + tileBounds.width) - playerBounds.x;
-                        }
-
-                        if (playerBounds.y < tileBounds.y && playerBounds.y + playerBounds.height > tileBounds.y) {
-                            overlapY = (playerBounds.y + playerBounds.height) - tileBounds.y;
-                        } else if (playerBounds.y > tileBounds.y && tileBounds.y + tileBounds.height > playerBounds.y) {
-                            overlapY = (tileBounds.y + tileBounds.height) - playerBounds.y;
-                        }
-
-                        // Csak a kisebb átfedés irányába mozdítsuk el
-                        if (overlapX != 0 && overlapY != 0) {
-                            if (Math.abs(overlapX) < Math.abs(overlapY)) {
-                                player.setX(player.getX() - (overlapX > 0 ? overlapX : -overlapX)); // Előző pozícióra vissza, vagy eltolás
-                            } else {
-                                player.setY(player.getY() - (overlapY > 0 ? overlapY : -overlapY));
-                            }
-                        } else if (overlapX != 0) {
-                            player.setX(player.getX() - (overlapX > 0 ? overlapX : -overlapX));
-                        } else if (overlapY != 0) {
-                            player.setY(player.getY() - (overlapY > 0 ? overlapY : -overlapY));
-                        }
+                    if (playerBounds.intersects(tile.getBounds())) {
+                        return true; // Ütközés történt egy fallal
                     }
                 }
             }
         }
+        return false;
     }
 }

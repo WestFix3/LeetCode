@@ -46,6 +46,14 @@ public class Enemy extends Entity {
         return health > 0;
     }
 
+    /**
+     * Visszaadja az ellenség aktuális életerejét.
+     * Ez a metódus hiányzott, ami a hibaüzenetet okozta.
+     */
+    public int getHealth() {
+        return health;
+    }
+
     @Override
     public void render() {
         if (texture != null) {

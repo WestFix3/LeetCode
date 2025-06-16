@@ -40,6 +40,7 @@ public class GameManager {
     private MapRenderer mapRenderer;
     private InputHandler inputHandler;
     private CollisionManager collisionManager;
+    // private Camera camera; // ELTÁVOLÍTVA: Nincs többé Kamera objektum
 
     private Texture playerTexture;
     private Map<Tile.TileType, Texture> tileTextures;
@@ -110,15 +111,20 @@ public class GameManager {
         tileTextures.put(Tile.TileType.FLOOR, TextureLoader.loadTexture("grass.png"));
         tileTextures.put(Tile.TileType.WALL, TextureLoader.loadTexture("wall_tile.png"));
 
-        enemyTexture = TextureLoader.loadTexture("enemy.png");
+        enemyTexture = TextureLoader.loadTexture("enemy1.png");
         if (enemyTexture == null) {
             System.err.println("HIBA: Nem sikerült betölteni az ellenség textúrát.");
+        } else {
+            System.out.println("DEBUG: Ellenség textúra sikeresen betöltve.");
         }
 
         if (tileTextures.get(Tile.TileType.FLOOR) == null || tileTextures.get(Tile.TileType.WALL) == null) {
             System.err.println("HIBA: Nem sikerült betölteni az egyik csempe textúrát.");
         }
 
+        // Játék entitások inicializálása
+        // A játékos mostantól a képernyő fix közepére inicializálódik és ott is marad,
+        // mozgása a képernyőn történik, nem a világ mozog alatta.
         player = new Player(width / 2, height / 2, 50, 50, playerTexture, window);
 
         currentDungeon = new Dungeon(20, 20, 32, tileTextures, enemyTexture);
@@ -126,6 +132,9 @@ public class GameManager {
         collisionManager = new CollisionManager(currentDungeon);
 
         projectiles = new ArrayList<>();
+
+        // ELTÁVOLÍTVA: Nincs többé kamera inicializálás
+        // camera = new Camera(player.getX(), player.getY());
     }
 
     private void loop() {
@@ -134,11 +143,7 @@ public class GameManager {
         final double frameTime = 1.0 / 60.0;
 
         while (!glfwWindowShouldClose(window)) {
-            // A KULCSFONTOSSÁGÚ VÁLTOZTATÁS ITT VAN:
-            // 1. ELŐSZÖR az input handler állapotát frissítjük az ELŐZŐ KÉPKOCKA szerint.
             inputHandler.update();
-
-            // 2. AZUTÁN dolgozzuk fel a jelenlegi képkocka GLFW eseményeit (ez frissíti a 'mouseButtons' tömböt).
             glfwPollEvents();
 
             double currentTime = glfwGetTime();
@@ -159,10 +164,17 @@ public class GameManager {
     private void update(float deltaTime, double currentTime) {
         player.update(deltaTime, inputHandler, collisionManager, currentTime);
 
+        // ELTÁVOLÍTVA: Nincs többé kamera frissítés
+        // camera.centerOn(player.getX(), player.getY(), width, height);
+
         Projectile newProjectile = null;
         if (inputHandler.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
             System.out.println("Lövés kérés érzékelve!");
-            newProjectile = player.getCurrentWeapon().shoot(player, player.getX(), player.getY(), (float)getCursorX(), (float)getCursorY(), (float)currentTime);
+            // VÁLTOZTATÁS: Az egér koordináták mostantól közvetlenül a képernyő koordináták.
+            // Nincs szükség kamera offsetre.
+            float mouseXWorld = (float)getCursorX();
+            float mouseYWorld = (float)getCursorY();
+            newProjectile = player.getCurrentWeapon().shoot(player, player.getX(), player.getY(), mouseXWorld, mouseYWorld, (float)currentTime);
             if (newProjectile != null) {
                 System.out.println("Lövedék kilőve!");
             } else {
@@ -218,11 +230,19 @@ public class GameManager {
             }
         }
 
+        int initialEnemyCount = currentDungeon.getMainRoom().getEnemies().size();
         currentDungeon.getMainRoom().getEnemies().removeIf(enemy -> !enemy.isAlive());
+        if (currentDungeon.getMainRoom().getEnemies().size() < initialEnemyCount) {
+            System.out.println("DEBUG: Ellenség(ek) eltávolítva. Jelenlegi szám: " + currentDungeon.getMainRoom().getEnemies().size());
+        }
     }
 
     private void render() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // ELTÁVOLÍTVA: Nincs többé kamera transzformáció
+        // glPushMatrix();
+        // glTranslatef(-camera.getX(), -camera.getY(), 0);
 
         mapRenderer.render(currentDungeon);
 
@@ -230,11 +250,17 @@ public class GameManager {
             enemy.render();
         }
 
+        // A játékos is a világban van, és a render() a GameManager-ben van.
+        // A player.render() mostantól a saját x, y koordinátáit használja,
+        // ami a képernyőhöz képest van, mivel nincs kamera eltolás.
         player.render();
 
         for (Projectile projectile : projectiles) {
             projectile.render();
         }
+
+        // ELTÁVOLÍTVA: Nincs többé kamera transzformáció
+        // glPopMatrix();
     }
 
     private void cleanup() {

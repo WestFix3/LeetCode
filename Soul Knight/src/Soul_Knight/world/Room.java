@@ -27,7 +27,7 @@ public class Room {
     }
 
     private void initializeRoom() {
-        // Egy nagyon egyszerű, alapértelmezett szoba generálása
+        // A szoba generálása (falak és padló)
         for (int x = 0; x < widthTiles; x++) {
             for (int y = 0; y < heightTiles; y++) {
                 if (x == 0 || x == widthTiles - 1 || y == 0 || y == heightTiles - 1) {
@@ -38,39 +38,49 @@ public class Room {
             }
         }
 
-        // Példa "ajtókra"
-
-        // Felső ajtó (egy csempe, középen)
-        tiles[widthTiles / 2][0] = new Tile(Tile.TileType.FLOOR, widthTiles / 2, 0, tileSize, tileTextures.get(Tile.TileType.FLOOR));
-
-        // Alsó ajtó (egy csempe, középen)
-        tiles[widthTiles / 2][heightTiles - 1] = new Tile(Tile.TileType.FLOOR, widthTiles / 2, heightTiles - 1, tileSize, tileTextures.get(Tile.TileType.FLOOR));
-
-        // Bal ajtó (egy csempe, középen)
-        tiles[0][heightTiles / 2] = new Tile(Tile.TileType.FLOOR, 0, heightTiles / 2, tileSize, tileTextures.get(Tile.TileType.FLOOR));
-
-        // ----- JOBB OLDALI BEJÁRAT MÉRETÉNEK BEÁLLÍTÁSA -----
-        // Példa: 5 csempe magasságú ajtó a jobb oldalon, középen
-        // Feltételezzük, hogy a heightTiles páratlan, vagy elegendően nagy az 5 csempéhez
-        int doorHeight = 5; // Az ajtó magassága csempékben (Módosítva 3-ról 5-re)
-        int startY = heightTiles / 2 - (doorHeight / 2); // Kezdő Y pozíció a középtől
-
+        // Ajtók beállítása
+        int doorHeight = 5;
+        int startY = heightTiles / 2 - (doorHeight / 2);
         for (int y = 0; y < doorHeight; y++) {
-            // Győződjünk meg róla, hogy az Y koordináta érvényes a pályán belül
             if (startY + y >= 0 && startY + y < heightTiles) {
-                tiles[widthTiles - 1][startY + y] = new Tile(Tile.TileType.FLOOR, widthTiles - 1, startY + y, tileSize, tileTextures.get(Tile.TileType.FLOOR));
+                tiles[widthTiles / 2][0] = new Tile(Tile.TileType.FLOOR, widthTiles / 2, 0, tileSize, tileTextures.get(Tile.TileType.FLOOR)); // Felső
+                tiles[widthTiles / 2][heightTiles - 1] = new Tile(Tile.TileType.FLOOR, widthTiles / 2, heightTiles - 1, tileSize, tileTextures.get(Tile.TileType.FLOOR)); // Alsó
+                tiles[0][heightTiles / 2] = new Tile(Tile.TileType.FLOOR, 0, heightTiles / 2, tileSize, tileTextures.get(Tile.TileType.FLOOR)); // Bal
+                tiles[widthTiles - 1][startY + y] = new Tile(Tile.TileType.FLOOR, widthTiles - 1, startY + y, tileSize, tileTextures.get(Tile.TileType.FLOOR)); // Jobb
             }
         }
-        // -----------------------------------------------------
 
-        // Később itt lehet ellenségeket, tárgyakat spawnolni
+        // ----- ELLENSÉGEK SPAWNOLÁSA: A KÉPERNYŐ KÖZELÉBE (ahol a játékos van) -----
+        // Mivel a játékos a (1280/2, 720/2) = (640, 360) képernyőkoordinátán van,
+        // az ellenségeket is hasonlóan kell elhelyezni, ha láthatóvá akarjuk tenni őket.
+
+        // Hozzunk létre egy referencia pontot a képernyő középpontjában
+        //float screenCenterX = 1280 / 2; // Ez a GameManager.width / 2 értéke
+        //float screenCenterY = 720 / 2;  // Ez a GameManager.height / 2 értéke
+        float screenCenterX = 500 / 2;
+        float screenCenterY = 400 / 2;
+
+        // Spawnoljunk 3 ellenséget a képernyő középpontja körül
+        for (int i = 0; i < 3; i++) {
+            // A spawn terület legyen a képernyő középpontja +/- egy bizonyos offset
+            float spawnOffsetX = (float) (Math.random() * 200 - 100); // -100 és +100 pixel között
+            float spawnOffsetY = (float) (Math.random() * 200 - 100); // -100 és +100 pixel között
+
+            float enemyX = screenCenterX + spawnOffsetX;
+            float enemyY = screenCenterY + spawnOffsetY;
+
+            Enemy newEnemy = new Enemy(enemyX, enemyY, 40, 40, enemyTexture, 50); // 40x40 méret, 50 HP
+            enemies.add(newEnemy);
+            System.out.println("DEBUG: Ellenség spawnolva a (" + enemyX + ", " + enemyY + ") pozícióra. HP: " + newEnemy.getHealth());
+        }
+        // -----------------------------------------------------------------------
     }
 
     public Tile getTile(int x, int y) {
         if (x >= 0 && x < widthTiles && y >= 0 && y < heightTiles) {
             return tiles[x][y];
         }
-        return null; // Vagy egy "üres" csempe típust ad vissza
+        return null;
     }
 
     public int getWidthTiles() {

@@ -33,8 +33,6 @@ public class InputHandler {
             public void invoke(long window, int button, int action, int mods) {
                 if (button >= 0 && button <= GLFW_MOUSE_BUTTON_LAST) {
                     mouseButtons[button] = action != GLFW_RELEASE;
-                    // FONTOS DEBUG: Látjuk, ha a GLFW regisztrálja a kattintást
-                    System.out.println("DEBUG: GLFW Egérgomb Esemény: Gomb=" + button + ", Akció=" + action + " (1=nyomva, 0=felengedve). Jelenlegi mouseButtons[" + button + "]=" + mouseButtons[button]);
                 }
             }
         });
@@ -45,7 +43,6 @@ public class InputHandler {
      * hogy elmentse az egérgombok előző állapotát.
      */
     public void update() {
-        System.arraycopy(mouseButtons, 0, mouseButtonsLastFrame, 0, mouseButtons.length);
         // DEBUG: Ellenőrizzük az update() hívását és a másolást
         // System.out.println("DEBUG: InputHandler.update() hívva. mouseButtons[0]=" + mouseButtons[GLFW_MOUSE_BUTTON_LEFT] + ", mouseButtonsLastFrame[0]=" + mouseButtonsLastFrame[GLFW_MOUSE_BUTTON_LEFT]);
     }
@@ -65,7 +62,6 @@ public class InputHandler {
      */
     public boolean isMouseButtonPressed(int buttonCode) {
         // FONTOS DEBUG: Láthatjuk a jelenlegi és az előző állapotot minden egyes ellenőrzéskor
-        System.out.println("DEBUG: isMouseButtonPressed ellenőrzés: Gomb=" + buttonCode + ", Jelenlegi=" + mouseButtons[buttonCode] + ", Előző=" + mouseButtonsLastFrame[buttonCode] + ", Eredmény=" + (mouseButtons[buttonCode] && !mouseButtonsLastFrame[buttonCode]));
         return mouseButtons[buttonCode] && !mouseButtonsLastFrame[buttonCode];
     }
 }

@@ -11,6 +11,7 @@ public class Weapon {
     private int damage;
     private float fireRate; // Másodpercenkénti lövések száma
     private float lastShotTime; // Az utolsó lövés óta eltelt idő
+
     private float projectileSpeed;
     private float projectileSize;
 
@@ -19,7 +20,7 @@ public class Weapon {
         this.fireRate = fireRate;
         this.projectileSpeed = projectileSpeed;
         this.projectileSize = projectileSize;
-        this.lastShotTime = -1000.0f; // Biztosítja, hogy az első lövés azonnal lehetséges legyen
+        this.lastShotTime = Float.NEGATIVE_INFINITY;
     }
 
     /**
@@ -33,11 +34,18 @@ public class Weapon {
      * @return Egy Projectile objektum, ha sikeresen lőtt, különben null.
      */
     public Projectile shoot(Entity shooter, float startX, float startY, float targetX, float targetY, float currentTime) {
-        // --- COOLDOWN ELLENŐRZÉS IDEIGLENESEN KIKAPCSOLVA A DEBUGOLÁSHOZ ---
-        // if (currentTime - lastShotTime < 1.0f / fireRate) {
-        //     return null; // Még cooldownon van
-        // }
-        // -------------------------------------------------------------------
+        float requiredTime = 1.0f / fireRate;
+        float timeSinceLastShot = currentTime - lastShotTime;
+
+        // DEBUG: Cooldown ellenőrzés értékei
+        System.out.println("DEBUG (Weapon.shoot): currentTime=" + currentTime + ", lastShotTime=" + lastShotTime + ", timeSinceLastShot=" + timeSinceLastShot + ", requiredTime=" + requiredTime);
+
+        // --- COOLDOWN ELLENŐRZÉS ---
+        if (timeSinceLastShot < requiredTime) {
+            System.out.println("DEBUG (Weapon.shoot): Fegyver cooldownon van. Hátralévő idő: " + (requiredTime - timeSinceLastShot));
+            return null; // Még cooldownon van
+        }
+        // ------------------------------------------
 
         // Irányvektor kiszámítása
         float dirX = targetX - startX;
@@ -45,7 +53,7 @@ public class Weapon {
         float length = (float) Math.sqrt(dirX * dirX + dirY * dirY);
 
         if (length == 0) { // Elkerüljük a nullával való osztást
-            System.out.println("Célpont túl közel van, vagy ugyanazon a pozíción, nem lehet lövedéket kilőni.");
+            System.out.println("DEBUG (Weapon.shoot): Célpont túl közel van, vagy ugyanazon a pozíción, nem lehet lövedéket kilőni (hossz=0).");
             return null;
         }
 
@@ -53,6 +61,8 @@ public class Weapon {
         dirY /= length;
 
         lastShotTime = currentTime; // Frissítjük az utolsó lövés idejét az aktuális időre
+        System.out.println("DEBUG (Weapon.shoot): Lövés SIKERES! lastShotTime frissítve: " + lastShotTime);
+
 
         // Létrehozzuk a lövedéket
         float projX = startX + shooter.getWidth() / 2 - projectileSize / 2;

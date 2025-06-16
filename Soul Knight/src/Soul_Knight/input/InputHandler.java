@@ -10,7 +10,7 @@ public class InputHandler {
     private long window;
     private boolean[] keys;
     private boolean[] mouseButtons;
-    private boolean[] mouseButtonsLastFrame; // Előző képkocka egérgomb állapotai
+    private boolean[] mouseButtonsLastFrame;
 
     public InputHandler(long window) {
         this.window = window;
@@ -23,7 +23,6 @@ public class InputHandler {
             public void invoke(long window, int key, int scancode, int action, int mods) {
                 if (key >= 0 && key <= GLFW_KEY_LAST) {
                     keys[key] = action != GLFW_RELEASE;
-                    // System.out.println("DEBUG: Billentyű esemény: Key=" + key + ", Action=" + action + ", keys[" + key + "]=" + keys[key]);
                 }
             }
         });
@@ -33,18 +32,15 @@ public class InputHandler {
             public void invoke(long window, int button, int action, int mods) {
                 if (button >= 0 && button <= GLFW_MOUSE_BUTTON_LAST) {
                     mouseButtons[button] = action != GLFW_RELEASE;
+                    // System.out.println("DEBUG: GLFW Egérgomb Esemény: Gomb=" + button + ", Akció=" + action + " (1=nyomva, 0=felengedve). Jelenlegi mouseButtons[" + button + "]=" + mouseButtons[button]); // Kikommentelve
                 }
             }
         });
     }
 
-    /**
-     * Ezt a metódust a GameManager hívja meg minden frissítés elején,
-     * hogy elmentse az egérgombok előző állapotát.
-     */
     public void update() {
-        // DEBUG: Ellenőrizzük az update() hívását és a másolást
-        // System.out.println("DEBUG: InputHandler.update() hívva. mouseButtons[0]=" + mouseButtons[GLFW_MOUSE_BUTTON_LEFT] + ", mouseButtonsLastFrame[0]=" + mouseButtonsLastFrame[GLFW_MOUSE_BUTTON_LEFT]);
+        System.arraycopy(mouseButtons, 0, mouseButtonsLastFrame, 0, mouseButtons.length);
+        // System.out.println("DEBUG: InputHandler.update() hívva. mouseButtons[0]=" + mouseButtons[GLFW_MOUSE_BUTTON_LEFT] + ", mouseButtonsLastFrame[0]=" + mouseButtonsLastFrame[GLFW_MOUSE_BUTTON_LEFT]); // Kikommentelve
     }
 
     public boolean isKeyDown(int keyCode) {
@@ -55,13 +51,8 @@ public class InputHandler {
         return mouseButtons[buttonCode];
     }
 
-    /**
-     * Ellenőrzi, hogy az egérgomb éppen most lett-e lenyomva (egyetlen kattintás).
-     * @param buttonCode Az egérgomb kódja (pl. GLFW_MOUSE_BUTTON_LEFT).
-     * @return Igaz, ha a gomb lenyomva van, és az előző képkockán nem volt lenyomva.
-     */
     public boolean isMouseButtonPressed(int buttonCode) {
-        // FONTOS DEBUG: Láthatjuk a jelenlegi és az előző állapotot minden egyes ellenőrzéskor
+        // System.out.println("DEBUG: isMouseButtonPressed ellenőrzés: Gomb=" + buttonCode + ", Jelenlegi=" + mouseButtons[buttonCode] + ", Előző=" + mouseButtonsLastFrame[buttonCode] + ", Eredmény=" + (mouseButtons[buttonCode] && !mouseButtonsLastFrame[buttonCode])); // Kikommentelve
         return mouseButtons[buttonCode] && !mouseButtonsLastFrame[buttonCode];
     }
 }

@@ -3,7 +3,7 @@ package Soul_Knight.entities;
 import Soul_Knight.input.InputHandler;
 import Soul_Knight.rendering.Texture;
 import Soul_Knight.physics.CollisionManager;
-import Soul_Knight.entities.weapons.Weapon;
+import Soul_Knight.entities.weapons.Weapon; // Győződj meg róla, hogy ez az import megvan!
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -22,7 +22,9 @@ public class Player extends Entity {
         super(x, y, width, height);
         this.texture = texture;
         this.windowHandle = windowHandle;
-        this.currentWeapon = new Weapon(10, 2.0f, 400.0f, 10.0f);
+        // Fegyver inicializálása: (sebzés, tűzgyorsaság, lövedéksebesség, lövedékméret)
+        // A tűzgyorsaságot most 10.0f-re állítjuk, ami 0.1 másodperc töltési időt jelent.
+        this.currentWeapon = new Weapon(10, 10.0f, 400.0f, 10.0f); // <<-- VÁLTOZÁS ITT!
     }
 
     @Override
@@ -35,7 +37,7 @@ public class Player extends Entity {
             if (arg instanceof InputHandler) {
                 inputHandler = (InputHandler) arg;
             } else if (arg instanceof CollisionManager) {
-                collisionManager = (CollisionManager) arg;
+                collisionManager = (CollisionManager) arg; // JAVÍTVA: Explicit cast hozzáadva
             } else if (arg instanceof Double) {
                 currentTime = (Double) arg;
             }
@@ -69,7 +71,7 @@ public class Player extends Entity {
             collisionManager.resolvePlayerTileCollisions(this, prevX, prevY);
         }
 
-        if (inputHandler.isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT) && currentWeapon != null) {
+        if (inputHandler.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT) && currentWeapon != null) {
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 DoubleBuffer xPos = stack.mallocDouble(1);
                 DoubleBuffer yPos = stack.mallocDouble(1);
@@ -80,8 +82,7 @@ public class Player extends Entity {
 
                 Projectile newProjectile = currentWeapon.shoot(this, x, y, mouseX, mouseY, (float)currentTime);
                 if (newProjectile != null) {
-                    // Itt kellene a GameManager-nek hozzáadnia a lövedéket a projectiles listához.
-                    // Ezt a GameManager update metódusa fogja kezelni.
+                    // Lövedék hozzáadását a GameManager kezeli
                 }
             }
         }
@@ -91,19 +92,16 @@ public class Player extends Entity {
     public void render() {
         if (texture != null) {
             texture.bind();
-            glColor3f(1.0f, 1.0f, 1.0f); // Fehér szín, hogy a textúra színei érvényesüljenek
+            glColor3f(1.0f, 1.0f, 1.0f);
             glBegin(GL_QUADS);
-            // TEXTÚRA KOORDINÁTÁK JAVÍTVA A 180 FOKOS ELFORGATÁSRA
-            // Az (0,0) textúra koordináta a betöltött kép "alján" van, ha a stbi_set_flip_vertically_on_load(true) be van állítva.
-            // Ahhoz, hogy a kép helyesen jelenjen meg (a fájl teteje a quad tetején), a V koordinátákat fordítva adjuk meg.
-            glTexCoord2f(0, 1); glVertex2f(x, y);         // Bal felső sarok (quad) -> (0,1) textúra koordináta (textúra bal alsó)
-            glTexCoord2f(1, 1); glVertex2f(x + width, y); // Jobb felső sarok (quad) -> (1,1) textúra koordináta (textúra jobb alsó)
-            glTexCoord2f(1, 0); glVertex2f(x + width, y + height); // Jobb alsó sarok (quad) -> (1,0) textúra koordináta (textúra jobb felső)
-            glTexCoord2f(0, 0); glVertex2f(x, y + height); // Bal alsó sarok (quad) -> (0,0) textúra koordináta (textúra bal felső)
+            glTexCoord2f(0, 1); glVertex2f(x, y);
+            glTexCoord2f(1, 1); glVertex2f(x + width, y);
+            glTexCoord2f(1, 0); glVertex2f(x + width, y + height);
+            glTexCoord2f(0, 0); glVertex2f(x, y + height);
             glEnd();
             texture.unbind();
         } else {
-            glColor3f(1.0f, 0.0f, 1.0f); // Magenta, ha nincs textúra
+            glColor3f(1.0f, 0.0f, 1.0f);
             glBegin(GL_QUADS);
             glVertex2f(x, y);
             glVertex2f(x + width, y);
